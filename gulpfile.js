@@ -82,12 +82,17 @@ gulp.task('clean', function(cb){
 
 /** build **/
 
-gulp.task('css', function(){
-  gulp.src('src/styles/*.css')
+gulp.task('styles', function(){
+  gulp.src(['src/styles/**/*.scss'])
+      .pipe($.sass({
+        precision: 10,
+        outputStyle: 'expanded'
+      }).on('error', $.sass.logError))
       .pipe($.concat(name + '.css'))
       .pipe(gulp.dest('dist/'))
       .pipe($.rename(name + '.min.css'))
       .pipe($.minifyCss())
+      .pipe(gulp.dest('src/styles'))
       .pipe(gulp.dest('dist/'));
 });
 
@@ -108,7 +113,7 @@ gulp.task('js', function(){
       .pipe(gulp.dest('dist/'));
 });
 
-gulp.task('build', ['css', 'js']);
+gulp.task('build', ['styles', 'js']);
 
 /** build docs **/
 
@@ -182,7 +187,16 @@ gulp.task('sample', ['widget-templates', 'sample-templates', 'dashboard-template
 
 /** livereload **/
 
-gulp.task('watch', function(){
+gulp.task('reload', function(){
+  gulp.src('sample/*.html')
+      .pipe(connect.reload());
+})
+
+gulp.task('watch-styles', function(){
+  gulp.watch('src/styles/*.scss', ['styles', 'reload']);
+})
+
+gulp.task('watch', ['watch-styles'], function(){
   var paths = [
     'src/scripts/*.js',
     'src/styles/*.css',
@@ -197,10 +211,7 @@ gulp.task('watch', function(){
     'sample/widgets/*/src/*.css',
     'sample/widgets/*/src/*.html'
   ];
-  gulp.watch(paths).on('change', function(file){
-    gulp.src(file.path)
-        .pipe(connect.reload());
-  });
+  gulp.watch(paths, ['reload']);
 });
 
 gulp.task('webserver', ['install-widgets'], function(){
@@ -218,17 +229,26 @@ gulp.task('webserver', ['install-widgets'], function(){
   });
 });
 
-gulp.task('serve', ['webserver', 'watch']);
+gulp.task('serve', ['webserver', 'styles', 'watch']);
 
 /** unit tests */
 
 gulp.task('test', ['dashboard-templates', 'karma']);
 
+/** run karma */
+function runKarma(done, singleRun){
+  new karmaServer({
+      configFile : __dirname +'/test/karma.conf.js',
+      singleRun: singleRun
+  }, done).start();
+}
+
 gulp.task('karma', ['dashboard-templates'], function(done) {
-    new karmaServer({
-        configFile : __dirname +'/test/karma.conf.js',
-        singleRun: true
-    }, done).start();
+  runKarma(done, true);
+});
+
+gulp.task('karma-debug', ['dashboard-templates'], function(done) {
+  runKarma(done, false);
 });
 
 gulp.task('coverall', ['test'], function() {

@@ -47,7 +47,7 @@
  */
 
 angular.module('adf')
-  .directive('adfDashboard', function ($rootScope, $log, $timeout, $modal, dashboard, adfTemplatePath) {
+  .directive('adfDashboard', function ($rootScope, $log, $timeout, $uibModal, dashboard, adfTemplatePath) {
     'use strict';
 
     function stringToBoolean(string){
@@ -288,6 +288,7 @@ angular.module('adf')
           if ($scope.editMode){
             if (!$scope.continuousEditMode) {
               $scope.modelCopy = angular.copy($scope.adfModel, {});
+              $rootScope.$broadcast('adfIsEditMode');
             }
           }
 
@@ -295,6 +296,10 @@ angular.module('adf')
             $rootScope.$broadcast('adfDashboardChanged', name, model);
           }
         };
+
+        $scope.$on('adfToggleEditMode', function() {
+            $scope.toggleEditMode();
+        });
 
         $scope.collapseAll = function(collapseExpandStatus){
           $rootScope.$broadcast('adfDashboardCollapseExpand',{collapseExpandStatus : collapseExpandStatus});
@@ -319,11 +324,10 @@ angular.module('adf')
           editDashboardScope.structures = dashboard.structures;
 
           var adfEditTemplatePath = adfTemplatePath + 'dashboard-edit.html';
-          if(model.editTemplateUrl)
-          {
+          if(model.editTemplateUrl) {
             adfEditTemplatePath = model.editTemplateUrl;
           }
-          var instance = $modal.open({
+          var instance = $uibModal.open({
             scope: editDashboardScope,
             templateUrl: adfEditTemplatePath,
             backdrop: 'static'
@@ -369,7 +373,7 @@ angular.module('adf')
             backdrop: 'static'
           };
 
-          var instance = $modal.open(opts);
+          var instance = $uibModal.open(opts);
           addScope.addWidget = function(widget){
             var w = {
               type: widget,

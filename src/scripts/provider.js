@@ -60,6 +60,7 @@ angular.module('adf.provider', [])
     *
     *   - `title` - `{string=}` - The title of the widget.
     *   - `description` - `{string=}` - Description of the widget.
+    *   - `collapsed` - `{boolean=}` - true if the widget should be in collapsed state. Default is false.
     *   - `config` - `{object}` - Predefined widget configuration.
     *   - `controller` - `{string=|function()=}` - Controller fn that should be
     *      associated with newly created scope of the widget or the name of a
@@ -68,6 +69,7 @@ angular.module('adf.provider', [])
     *   - `controllerAs` - `{string=}` - A controller alias name. If present the controller will be
     *      published to scope under the `controllerAs` name.
     *   - `frameless` - `{boolean=}` - false if the widget should be shown in frameless mode. The default is false.
+    *   - `styleClass` - `{object}` - space delimited string or map of classes bound to the widget.
     *   - `template` - `{string=|function()=}` - html template as a string.
     *   - `templateUrl` - `{string=}` - path to an html template.
     *   - `reload` - `{boolean=}` - true if the widget could be reloaded. The default is false.
@@ -228,8 +230,23 @@ angular.module('adf.provider', [])
          * columns and widgets in the dashboard.
          */
         id: function(){
-          return ++cid;
-        }
+          return new Date().getTime() + '-' + (++cid);
+        },
+
+        /**
+         * @ngdoc method
+         * @name adf.dashboard#idEqual
+         * @methodOf adf.dashboard
+         * @param {string} id
+         * @param {string} other id
+         * @description
+         *
+         * Checks if the given ids are equal.
+         */
+         idEquals: function(id, other){
+           // use toString, because old ids are numbers
+           return ((id) && (other)) && (id.toString() === other.toString());
+         }
       };
     };
 
